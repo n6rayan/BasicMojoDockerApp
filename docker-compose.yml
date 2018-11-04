@@ -1,0 +1,33 @@
+version: '2'
+services:
+    miniondatabase:
+        image: postgres:latest
+        environment:
+            POSTGRES_DB: minion_backend
+            POSTGRES_USER: minion_user
+            POSTGRES_PASSWORD: minion_password
+        ports:
+            - "5432:5432"
+    web:
+        image: basicapp:latest
+        links:
+            - miniondatabase
+        ports:
+            - "3000:3000"
+        environment:
+            MOJO_MODE: docker
+            MOJO_LOG_LEVEL: debug
+            MOJO_EXCEPTION_VERBOSE: 1
+            MOJO_TEMPLATE_DEBUG: 1
+            MOJO_BASE_DEBUG: 1
+    worker:
+        image: basicapp:latest
+        command: ["bash", "scripts/wait-for-postgres.sh", "/srv/basicapp"]
+        links:
+            - miniondatabase        
+        environment:
+            MOJO_MODE: docker
+            MOJO_LOG_LEVEL: debug
+            MOJO_EXCEPTION_VERBOSE: 1
+            MOJO_TEMPLATE_DEBUG: 1
+            MOJO_BASE_DEBUG: 1
